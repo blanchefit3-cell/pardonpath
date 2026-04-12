@@ -209,10 +209,17 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
+const resolveApiUrl = () => {
+  // If Cloudflare AI Gateway URL is configured, use it for caching and cost optimization
+  if (process.env.CLOUDFLARE_AI_GATEWAY_URL) {
+    return process.env.CLOUDFLARE_AI_GATEWAY_URL;
+  }
+  
+  // Fallback to Manus Forge API
+  return ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
     ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
     : "https://forge.manus.im/v1/chat/completions";
+};
 
 const assertApiKey = () => {
   if (!ENV.forgeApiKey) {
@@ -280,7 +287,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: process.env.CLOUDFLARE_AI_GATEWAY_URL?.includes("gateway.ai.cloudflare.com") ? "claude-3-5-sonnet-20241022" : "gemini-2.5-flash",
     messages: messages.map(normalizeMessage),
   };
 
@@ -296,9 +303,14 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
+  // Cloudflare gateway uses Claude, so adjust parameters accordingly
+  if (process.env.CLOUDFLARE_AI_GATEWAY_URL?.includes("gateway.ai.cloudflare.com")) {
+    payload.max_tokens = 4096;
+  } else {
+    payload.max_tokens = 32768;
+    payload.thinking = {
+      "budget_tokens": 128,
+    };
   }
 
   const normalizedResponseFormat = normalizeResponseFormat({
@@ -312,11 +324,19 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
+  const apiUrl = resolveApiUrl();
+  const isCloudflareGateway = apiUrl.includes("gateway.ai.cloudflare.com");
+  
+  const response = await fetch(apiUrl, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      // Use Anthropic API key for Cloudflare gateway, Forge API key for Manus
+      authorization: `Bearer ${
+        isCloudflareGateway
+          ? process.env.ANTHROPIC_API_KEY || ENV.forgeApiKey
+          : ENV.forgeApiKey
+      }`,
     },
     body: JSON.stringify(payload),
   });
