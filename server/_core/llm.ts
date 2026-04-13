@@ -286,10 +286,33 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     response_format,
   } = params;
 
+  const isCloudflareGateway = process.env.CLOUDFLARE_AI_GATEWAY_URL?.includes("gateway.ai.cloudflare.com");
+  
+  // Anthropic Messages API requires system messages to be separate, not in the messages array
+  let systemMessage: string | undefined;
+  let processedMessages = messages;
+  
+  if (isCloudflareGateway) {
+    // Extract system message from messages array for Anthropic
+    const systemMessages = messages.filter(m => m.role === "system");
+    if (systemMessages.length > 0) {
+      systemMessage = systemMessages
+        .map(m => typeof m.content === "string" ? m.content : JSON.stringify(m.content))
+        .join("\n");
+      // Remove system messages from the messages array
+      processedMessages = messages.filter(m => m.role !== "system");
+    }
+  }
+  
   const payload: Record<string, unknown> = {
-    model: process.env.CLOUDFLARE_AI_GATEWAY_URL?.includes("gateway.ai.cloudflare.com") ? "claude-3-5-sonnet-20241022" : "gemini-2.5-flash",
-    messages: messages.map(normalizeMessage),
+    model: isCloudflareGateway ? "claude-sonnet-4-5" : "gemini-2.5-flash",
+    messages: processedMessages.map(normalizeMessage),
   };
+  
+  // Add system parameter for Anthropic
+  if (isCloudflareGateway && systemMessage) {
+    payload.system = systemMessage;
+  }
 
   if (tools && tools.length > 0) {
     payload.tools = tools;
@@ -304,7 +327,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   }
 
   // Cloudflare gateway uses Claude, so adjust parameters accordingly
-  if (process.env.CLOUDFLARE_AI_GATEWAY_URL?.includes("gateway.ai.cloudflare.com")) {
+  if (isCloudflareGateway) {
     payload.max_tokens = 4096;
   } else {
     payload.max_tokens = 32768;
@@ -313,31 +336,40 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     };
   }
 
-  const normalizedResponseFormat = normalizeResponseFormat({
-    responseFormat,
-    response_format,
-    outputSchema,
-    output_schema,
-  });
+  // Anthropic doesn't support response_format; it uses a different API for structured outputs
+  if (!isCloudflareGateway) {
+    const normalizedResponseFormat = normalizeResponseFormat({
+      responseFormat,
+      response_format,
+      outputSchema,
+      output_schema,
+    });
 
-  if (normalizedResponseFormat) {
-    payload.response_format = normalizedResponseFormat;
+    if (normalizedResponseFormat) {
+      payload.response_format = normalizedResponseFormat;
+    }
   }
 
   const apiUrl = resolveApiUrl();
-  const isCloudflareGateway = apiUrl.includes("gateway.ai.cloudflare.com");
+  
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+  };
+
+  if (isCloudflareGateway) {
+    // Cloudflare AI Gateway with Anthropic requires specific headers
+    // Use x-api-key for Anthropic API key (not Authorization header)
+    headers["x-api-key"] = process.env.ANTHROPIC_API_KEY || "";
+    headers["cf-aig-authorization"] = `Bearer ${process.env.CF_AIG_TOKEN || ""}`;
+    headers["anthropic-version"] = "2023-06-01";
+  } else {
+    // Manus Forge API
+    headers.authorization = `Bearer ${ENV.forgeApiKey}`;
+  }
   
   const response = await fetch(apiUrl, {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      // Use Anthropic API key for Cloudflare gateway, Forge API key for Manus
-      authorization: `Bearer ${
-        isCloudflareGateway
-          ? process.env.ANTHROPIC_API_KEY || ENV.forgeApiKey
-          : ENV.forgeApiKey
-      }`,
-    },
+    headers,
     body: JSON.stringify(payload),
   });
 
@@ -348,5 +380,26 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     );
   }
 
-  return (await response.json()) as InvokeResult;
+  const result = await response.json();
+  
+  // Normalize Anthropic response to OpenAI format for consistency
+  if (isCloudflareGateway && result.content) {
+    // Anthropic response format: { content: [...], model, stop_reason, usage }
+    // Convert to OpenAI format: { choices: [...], model, usage }
+    return {
+      choices: [
+        {
+          message: {
+            content: result.content[0]?.text || "",
+            role: "assistant",
+          },
+          finish_reason: result.stop_reason,
+        },
+      ],
+      model: result.model,
+      usage: result.usage,
+    } as InvokeResult;
+  }
+  
+  return result as InvokeResult;
 }
