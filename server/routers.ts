@@ -14,6 +14,24 @@ import { applicants, applications, auditLogs } from "../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { checkEligibility, OffenseCategory, type EligibilityCheckInput } from "./eligibility-engine";
+import {
+  findProvidersNearPostalCode,
+  findProvidersByProvince,
+  findProvidersByCity,
+  getProviderById,
+  getAllProvinces,
+  getProviderStatistics,
+} from "./rcmp-locator";
+import {
+  uploadDocument,
+  getDocumentById,
+  getDocumentChecklist,
+  checkDocumentCompletion,
+  updateDocumentAIReview,
+  updateDocumentHumanReview,
+  DocumentType,
+} from "./documents";
+import { reviewDocumentCompleteness } from "./document-review";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -189,17 +207,28 @@ export const appRouter = router({
       }),
 
     /**
-     * Create a document record after S3 upload
+     * Get a specific document by ID
      */
-    create: protectedProcedure
+    getById: protectedProcedure
+      .input(z.object({ documentId: z.number() }))
+      .query(async ({ input }) => {
+        const doc = await getDocumentById(input.documentId);
+        if (!doc) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
+        }
+        return doc;
+      }),
+
+    /**
+     * Upload a document to S3 and store metadata
+     */
+    upload: protectedProcedure
       .input(
         z.object({
           applicationId: z.number(),
           documentType: z.enum(["court_record", "police_certificate", "id_document", "other"]),
           fileName: z.string().min(1),
-          fileUrl: z.string().url(),
-          fileKey: z.string().min(1),
-          fileSizeBytes: z.number().optional(),
+          fileBuffer: z.instanceof(Buffer),
           mimeType: z.string().optional(),
         })
       )
@@ -210,25 +239,197 @@ export const appRouter = router({
         }
 
         try {
-          const result = await database.insert(auditLogs).values({
+          // Upload document to S3 and store metadata
+          const doc = await uploadDocument(
+            input.applicationId,
+            input.documentType as DocumentType,
+            input.fileName,
+            input.fileBuffer,
+            input.mimeType || "application/octet-stream"
+          );
+
+          // Log audit event
+          await database.insert(auditLogs).values({
             applicationId: input.applicationId,
             userId: ctx.user.id,
             action: "document_uploaded",
             details: JSON.stringify({
+              documentId: doc.id,
               documentType: input.documentType,
               fileName: input.fileName,
-              fileSize: input.fileSizeBytes,
+              fileSize: input.fileBuffer.length,
             }),
             ipAddress: ctx.req.ip || "unknown",
             userAgent: ctx.req.headers["user-agent"] || "unknown",
           });
 
-          const documentId = (result as any).insertId as number;
-
-          return { id: documentId, status: "pending" };
+          return doc;
         } catch (error) {
-          console.error("[Documents.create] Error:", error);
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create document record" });
+          console.error("[Documents.upload] Error:", error);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to upload document" });
+        }
+      }),
+
+    /**
+     * Get required document checklist for a jurisdiction
+     */
+    getChecklist: publicProcedure
+      .input(z.object({ province: z.string() }))
+      .query(({ input }) => {
+        const required = getDocumentChecklist(input.province);
+        return {
+          province: input.province,
+          required,
+          description: `Required documents for ${input.province}`,
+        };
+      }),
+
+    /**
+     * Check document completion status for an application
+     */
+    checkCompletion: protectedProcedure
+      .input(z.object({ applicationId: z.number(), province: z.string() }))
+      .query(async ({ input }) => {
+        return await checkDocumentCompletion(input.applicationId, input.province);
+      }),
+
+    /**
+     * Trigger AI-assisted document completeness review
+     */
+    reviewWithAI: protectedProcedure
+      .input(z.object({ documentId: z.number(), documentType: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        const database = await getDb();
+        if (!database) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+        }
+
+        try {
+          const doc = await getDocumentById(input.documentId);
+          if (!doc) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
+          }
+
+          // Run AI review
+          const reviewResult = await reviewDocumentCompleteness(input.documentId, input.documentType);
+
+          // Log audit event
+          await database.insert(auditLogs).values({
+            applicationId: doc.applicationId,
+            userId: ctx.user.id,
+            action: "document_ai_reviewed",
+            details: JSON.stringify({
+              documentId: input.documentId,
+              isComplete: reviewResult.isComplete,
+              confidence: reviewResult.confidence,
+              missingElements: reviewResult.missingElements,
+            }),
+            ipAddress: ctx.req.ip || "unknown",
+            userAgent: ctx.req.headers["user-agent"] || "unknown",
+          });
+
+          return reviewResult;
+        } catch (error) {
+          console.error("[Documents.reviewWithAI] Error:", error);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to review document" });
+        }
+      }),
+
+    /**
+     * Update document AI review status
+     */
+    updateAIReviewStatus: protectedProcedure
+      .input(
+        z.object({
+          documentId: z.number(),
+          status: z.enum(["pending", "approved", "flagged"]),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const database = await getDb();
+        if (!database) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+        }
+
+        try {
+          const doc = await getDocumentById(input.documentId);
+          if (!doc) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
+          }
+
+          const updated = await updateDocumentAIReview(input.documentId, input.status, input.notes);
+
+          // Log audit event
+          await database.insert(auditLogs).values({
+            applicationId: doc.applicationId,
+            userId: ctx.user.id,
+            action: "document_ai_status_updated",
+            details: JSON.stringify({
+              documentId: input.documentId,
+              status: input.status,
+              notes: input.notes,
+            }),
+            ipAddress: ctx.req.ip || "unknown",
+            userAgent: ctx.req.headers["user-agent"] || "unknown",
+          });
+
+          return updated;
+        } catch (error) {
+          console.error("[Documents.updateAIReviewStatus] Error:", error);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to update document status" });
+        }
+      }),
+
+    /**
+     * Update document human review status (admin/paralegal only)
+     */
+    updateHumanReviewStatus: protectedProcedure
+      .input(
+        z.object({
+          documentId: z.number(),
+          status: z.enum(["pending", "approved", "rejected"]),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        // Only admins and paralegals can update human review status
+        if (ctx.user.role !== "admin" && ctx.user.role !== "paralegal") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only admins and paralegals can update review status" });
+        }
+
+        const database = await getDb();
+        if (!database) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+        }
+
+        try {
+          const doc = await getDocumentById(input.documentId);
+          if (!doc) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Document not found" });
+          }
+
+          const updated = await updateDocumentHumanReview(input.documentId, input.status, input.notes);
+
+          // Log audit event
+          await database.insert(auditLogs).values({
+            applicationId: doc.applicationId,
+            userId: ctx.user.id,
+            action: "document_human_reviewed",
+            details: JSON.stringify({
+              documentId: input.documentId,
+              status: input.status,
+              notes: input.notes,
+              reviewer: ctx.user.id,
+            }),
+            ipAddress: ctx.req.ip || "unknown",
+            userAgent: ctx.req.headers["user-agent"] || "unknown",
+          });
+
+          return updated;
+        } catch (error) {
+          console.error("[Documents.updateHumanReviewStatus] Error:", error);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to update document status" });
         }
       }),
   }),
@@ -311,6 +512,72 @@ export const appRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to check eligibility" });
         }
       }),
+  }),
+
+  /**
+   * Fingerprints router: find RCMP-accredited fingerprint providers
+   */
+  fingerprints: router({
+    /**
+     * Find providers near a postal code
+     */
+    findNear: publicProcedure
+      .input(
+        z.object({
+          postalCode: z.string(),
+          maxDistance: z.number().optional().default(50),
+          province: z.string().optional(),
+        })
+      )
+      .query(({ input }) => {
+        return findProvidersNearPostalCode(input.postalCode, input.maxDistance, input.province);
+      }),
+
+    /**
+     * Find providers by province
+     */
+    findByProvince: publicProcedure
+      .input(z.object({ province: z.string() }))
+      .query(({ input }) => {
+        return findProvidersByProvince(input.province);
+      }),
+
+    /**
+     * Find providers by city
+     */
+    findByCity: publicProcedure
+      .input(
+        z.object({
+          city: z.string(),
+          province: z.string().optional(),
+        })
+      )
+      .query(({ input }) => {
+        return findProvidersByCity(input.city, input.province);
+      }),
+
+    /**
+     * Get provider by ID
+     */
+    getById: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .query(({ input }) => {
+        return getProviderById(input.id);
+      }),
+
+    /**
+     * Get all provinces with providers
+     */
+    getAllProvinces: publicProcedure.query(() => {
+      return getAllProvinces();
+    }),
+
+    /**
+     * Get provider statistics
+     */
+    getStatistics: publicProcedure.query(() => {
+      return getProviderStatistics();
+    }),
   }),
 });
 
