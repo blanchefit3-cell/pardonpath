@@ -35,15 +35,16 @@
 - [ ] Eligibility report PDF generation - Phase 4 task
 - [x] Audit log entries for eligibility checks (schema supports it)
 
-## Phase 3: Document Workflow & Storage (Secure Storage, RCMP Locator)
-- [ ] Secure document upload portal
-- [ ] S3 integration with encryption
-- [ ] Document checklist generator (jurisdiction-specific)
+## Phase 3: Document Workflow & Storage (Secure Storage, RCMP Locator) - ✅ PARTIAL
+- [x] Secure document upload portal (S3 integration)
+- [x] S3 integration with encryption (storagePut/storageGet)
+- [x] Document checklist generator (jurisdiction-specific)
 - [ ] AI-assisted document completeness review (Claude vision)
 - [ ] RCMP-accredited fingerprint provider locator (postal code search)
 - [ ] Document viewer for admin dashboard
 - [ ] Audit log entries for document uploads/reviews
 - [ ] PIPEDA compliance documentation
+- [ ] tRPC API integration for document upload/retrieval
 
 ## Phase 4: Form Automation & PDF Generation (PBC Form Mapping)
 - [ ] PBC form field mapping logic
