@@ -64,9 +64,10 @@ function Nav() {
           <span className="font-semibold text-zinc-900 tracking-tight">PardonPath</span>
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm text-zinc-500">
-          <a href="#how-it-works" className="hover:text-zinc-900 transition-colors">How it works</a>
-          <a href="#pricing" className="hover:text-zinc-900 transition-colors">Pricing</a>
-          <a href="#faq" className="hover:text-zinc-900 transition-colors">FAQ</a>
+          <Link href="/how-it-works" className="hover:text-zinc-900 transition-colors">How it works</Link>
+          <Link href="/eligibility" className="hover:text-zinc-900 transition-colors">Eligibility</Link>
+          <Link href="/pricing" className="hover:text-zinc-900 transition-colors">Pricing</Link>
+          <Link href="/faq" className="hover:text-zinc-900 transition-colors">FAQ</Link>
         </nav>
         <div className="flex items-center gap-3">
           {user ? (

@@ -21,6 +21,9 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import HelpCenter from "./pages/HelpCenter";
 import HelpArticle from "./pages/HelpArticle";
+import HowItWorks from "./pages/HowItWorks";
+import Eligibility from "./pages/Eligibility";
+import Pricing from "./pages/Pricing";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -55,6 +58,9 @@ function Router() {
       <Route path={"/terms"} component={Terms} />
       <Route path={"/contact"} component={Contact} />
       <Route path={"/faq"} component={FAQ} />
+      <Route path={"/how-it-works"} component={HowItWorks} />
+      <Route path={"/eligibility"} component={Eligibility} />
+      <Route path={"/pricing"} component={Pricing} />
       <Route path={"/blog"} component={Blog} />
       <Route path={"/blog/:slug"} component={BlogPost} />
       <Route path={"/help"} component={HelpCenter} />

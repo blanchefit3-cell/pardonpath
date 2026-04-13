@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
-
+import { OnboardingWizard } from "@/components/OnboardingWizard";
 import { Link } from "wouter";
 import {
   CheckCircle2,
@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 type MilestoneStatus = "completed" | "in_progress" | "pending" | "skipped";
@@ -144,6 +144,16 @@ function statusBadge(status: string) {
 // ─── Main Dashboard ──────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Show onboarding on first visit (check localStorage)
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem("onboarding-completed");
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+      localStorage.setItem("onboarding-completed", "true");
+    }
+  }, []);
 
   // Use applicationId = 1 as the demo application; in production this would
   // come from the user's active application list.
@@ -228,7 +238,12 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <>
+      <OnboardingWizard
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+      />
+      <div className="min-h-screen bg-zinc-50">
       {/* Top nav */}
       <header className="bg-white border-b border-zinc-100 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -455,5 +470,6 @@ export default function Dashboard() {
         </div>
       </main>
     </div>
+    </>
   );
 }

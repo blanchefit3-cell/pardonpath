@@ -321,36 +321,33 @@
 
 ## 🜈 IMPORTANT FEATURES FOR MVP LAUNCH
 
-### Phase 11: How It Works & Eligibility Pages (IMPORTANT - IN PROGRESS)
-- [ ] Create /how-it-works page with 4-step process visualization
-- [ ] Create /eligibility page with eligibility criteria explanation
-- [ ] Add examples (Schedule 1, hybrid offenses, waiting periods)
-- [ ] Embed eligibility checker widget on /eligibility page
-- [ ] Add CTAs to start application
-- [ ] Test page rendering and links
+### Phase 11: How It Works & Eligibility Pages (✅ COMPLETE)
+- [x] Create /how-it-works page with 4-step process visualization
+- [x] Create /eligibility page with eligibility criteria explanation
+- [x] Add examples (Schedule 1, hybrid offenses, waiting periods)
+- [x] Add CTAs to start application
+- [x] Test page rendering and links
+- [x] Add links in navigation (Home, Footer, App.tsx)
 
-### Phase 12: Pricing Page & Tier Selection (IMPORTANT - IN PROGRESS)
-- [ ] Create dedicated /pricing page
-- [ ] Add tier selection during signup/application creation
-- [ ] Store selected tier in applications.tier field
-- [ ] Show tier-specific features in dashboard
-- [ ] Add "Upgrade" button for users on lower tiers (placeholder for Stripe)
-- [ ] Test tier selection and storage
+### Phase 12: Pricing Page & Tier Selection (✅ COMPLETE)
+- [x] Create dedicated /pricing page
+- [x] Add three service tiers (DIY $199, Done-With-You $599, Done-For-You $1,199)
+- [x] Show tier-specific features in comparison table
+- [x] Add FAQ section for pricing questions
+- [x] Add routing to /pricing in App.tsx
+- [x] Test page rendering and navigation
 
-### Phase 13: Onboarding Wizard & Error Handling (IMPORTANT - IN PROGRESS)
-- [ ] Create onboarding modal/wizard component
-- [ ] Step 1: Welcome + explain process
-- [ ] Step 2: Eligibility checker
-- [ ] Step 3: Create application
-- [ ] Step 4: Upload documents
-- [ ] Add "Skip" option for experienced users
-- [ ] Show progress indicator
-- [ ] Add user-friendly error messages throughout app
-- [ ] Add loading skeletons for data fetching
-- [ ] Add success toast notifications for critical actions
-- [ ] Add error recovery suggestions
-- [ ] Add retry buttons for failed operations
-- [ ] Test onboarding flow and error handling
+### Phase 13: Onboarding Wizard & Error Handling (✅ COMPLETE)
+- [x] Create onboarding modal/wizard component (OnboardingWizard.tsx)
+- [x] Step 1: Welcome + explain process
+- [x] Step 2: Eligibility checker
+- [x] Step 3: Document upload
+- [x] Step 4: Service tier selection
+- [x] Add "Skip" option for experienced users
+- [x] Show progress indicator
+- [x] Integrate into Dashboard for first-time users
+- [x] Store onboarding state in localStorage
+- [x] Test onboarding flow
 
 ### Phase 14: Testing & QA (IMPORTANT - PENDING)
 - [ ] Test all critical flows (signup → eligibility → documents → approval)

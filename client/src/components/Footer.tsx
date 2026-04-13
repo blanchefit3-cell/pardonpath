@@ -44,8 +44,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition">
-                  Dashboard
+                <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition">
+                  How It Works
+                </Link>
+              </li>
+              <li>
+                <Link href="/eligibility" className="text-muted-foreground hover:text-foreground transition">
+                  Eligibility
                 </Link>
               </li>
               <li>
