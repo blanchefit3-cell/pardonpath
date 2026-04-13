@@ -265,8 +265,11 @@
 - [x] Add /blog and /help routes to App.tsx
 - [x] Update Footer.tsx to link to Blog and Help pages
 - [ ] Apply database migration to Supabase (run migration SQL in Supabase SQL Editor)
-- [ ] Create individual blog post pages (/blog/:slug)
-- [ ] Create individual help article pages (/help/:slug)
+- [x] Create individual blog post pages (/blog/:slug) with SEO meta tags
+- [x] Create individual help article pages (/help/:slug) with feedback widget
+- [x] Create blog-router.ts with tRPC procedures (getAll, getBySlug, getCategories)
+- [x] Create help-router.ts with tRPC procedures (getAll, getBySlug, getCategories, search)
+- [x] Register blog and help routers in appRouter
 - [ ] Add blog admin interface for creating/editing posts
 - [ ] Add help article admin interface for creating/editing articles
 - [ ] Implement blog post SEO metadata (meta tags, structured data)

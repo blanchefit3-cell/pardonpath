@@ -39,18 +39,18 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Product</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/">
-                  <a className="text-muted-foreground hover:text-foreground transition">Home</a>
+                <Link href="/" className="text-muted-foreground hover:text-foreground transition">
+                  Home
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard">
-                  <a className="text-muted-foreground hover:text-foreground transition">Dashboard</a>
+                <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition">
+                  Dashboard
                 </Link>
               </li>
               <li>
-                <Link href="/faq">
-                  <a className="text-muted-foreground hover:text-foreground transition">FAQ</a>
+                <Link href="/faq" className="text-muted-foreground hover:text-foreground transition">
+                  FAQ
                 </Link>
               </li>
             </ul>
@@ -61,23 +61,23 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/about">
-                  <a className="text-muted-foreground hover:text-foreground transition">About Us</a>
+                <Link href="/about" className="text-muted-foreground hover:text-foreground transition">
+                  About Us
                 </Link>
               </li>
               <li>
-                <Link href="/blog">
-                  <a className="text-muted-foreground hover:text-foreground transition">Blog</a>
+                <Link href="/blog" className="text-muted-foreground hover:text-foreground transition">
+                  Blog
                 </Link>
               </li>
               <li>
-                <Link href="/help">
-                  <a className="text-muted-foreground hover:text-foreground transition">Help Center</a>
+                <Link href="/help" className="text-muted-foreground hover:text-foreground transition">
+                  Help Center
                 </Link>
               </li>
               <li>
-                <Link href="/contact">
-                  <a className="text-muted-foreground hover:text-foreground transition">Contact</a>
+                <Link href="/contact" className="text-muted-foreground hover:text-foreground transition">
+                  Contact
                 </Link>
               </li>
             </ul>
@@ -88,18 +88,18 @@ export default function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Legal</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/privacy">
-                  <a className="text-muted-foreground hover:text-foreground transition">Privacy Policy</a>
+                <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition">
+                  Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms">
-                  <a className="text-muted-foreground hover:text-foreground transition">Terms of Service</a>
+                <Link href="/terms" className="text-muted-foreground hover:text-foreground transition">
+                  Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/faq">
-                  <a className="text-muted-foreground hover:text-foreground transition">FAQ</a>
+                <Link href="/faq" className="text-muted-foreground hover:text-foreground transition">
+                  FAQ
                 </Link>
               </li>
               <li>

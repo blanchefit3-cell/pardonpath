@@ -17,7 +17,9 @@ import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import HelpCenter from "./pages/HelpCenter";
+import HelpArticle from "./pages/HelpArticle";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -35,7 +37,9 @@ function Router() {
       <Route path={"/contact"} component={Contact} />
       <Route path={"/faq"} component={FAQ} />
       <Route path={"/blog"} component={Blog} />
+      <Route path={"/blog/:slug"} component={BlogPost} />
       <Route path={"/help"} component={HelpCenter} />
+      <Route path={"/help/:slug"} component={HelpArticle} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
