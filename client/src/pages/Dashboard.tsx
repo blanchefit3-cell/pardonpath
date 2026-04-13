@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+
 import { Link } from "wouter";
 import {
   CheckCircle2,
@@ -219,7 +219,7 @@ export default function Dashboard() {
         <div className="text-center space-y-4">
           <Shield className="w-12 h-12 text-zinc-300 mx-auto" />
           <p className="text-zinc-500">Please sign in to view your dashboard.</p>
-          <a href={getLoginUrl()}>
+          <a href="/login">
             <Button className="bg-zinc-900 text-white hover:bg-zinc-800">Sign in</Button>
           </a>
         </div>

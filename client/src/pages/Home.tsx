@@ -12,7 +12,7 @@ import {
   Lock,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+
 
 // ─── Animation Variants ────────────────────────────────────────────────────────
 const fadeUp = {
@@ -77,11 +77,11 @@ function Nav() {
             </Link>
           ) : (
             <>
-              <a href={getLoginUrl()} className="text-sm text-zinc-600 hover:text-zinc-900 transition-colors">
+              <a href={"/login"} className="text-sm text-zinc-600 hover:text-zinc-900 transition-colors">
                 Sign in
               </a>
               <a
-                href={getLoginUrl()}
+                href="/login"
                 className="h-9 px-4 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 active:scale-[0.98] transition-all"
               >
                 Get started
@@ -226,7 +226,7 @@ function Hero() {
               className="flex flex-col sm:flex-row items-start gap-3"
             >
               <a
-                href={user ? "/dashboard" : getLoginUrl()}
+                href={user ? "/dashboard" : "/login"}
                 className="inline-flex items-center gap-2 h-12 px-6 rounded-xl bg-zinc-900 text-white font-medium hover:bg-zinc-800 active:scale-[0.98] transition-all"
               >
                 Check my eligibility
@@ -429,7 +429,7 @@ function Pricing() {
                 </ul>
 
                 <a
-                  href={getLoginUrl()}
+                  href={"/login"}
                   className={`w-full h-11 rounded-xl flex items-center justify-center text-sm font-medium transition-all active:scale-[0.98] ${
                     plan.highlight
                       ? "bg-white text-zinc-900 hover:bg-zinc-100"
@@ -538,7 +538,7 @@ function CTA() {
             </div>
             <div className="flex flex-col gap-3 flex-shrink-0">
               <a
-                href={getLoginUrl()}
+                href={"/login"}
                 className="inline-flex items-center gap-2 h-12 px-8 rounded-xl bg-white text-zinc-900 font-medium hover:bg-zinc-100 active:scale-[0.98] transition-all whitespace-nowrap"
               >
                 Check eligibility
