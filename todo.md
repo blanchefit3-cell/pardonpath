@@ -173,14 +173,16 @@
 - [ ] Update foreign keys if needed
 - [ ] Test migration on staging database
 
-### Phase 3: Frontend Implementation (⏳ PENDING)
-- [ ] Create Supabase client in client/src/const.ts
-- [ ] Replace useAuth hook with Supabase session listener
-- [ ] Update tRPC client to send Authorization header
-- [ ] Create Login.tsx page (email/password + OAuth)
-- [ ] Create Signup.tsx page
-- [ ] Update App.tsx routing
-- [ ] Remove getLoginUrl() references
+### Phase 3: Frontend Implementation (✅ COMPLETE)
+- [x] Create Supabase client in client/src/const.ts
+- [x] Replace useAuth hook with Supabase session listener
+- [x] Update tRPC client to send Authorization header
+- [x] Create Login.tsx page (email/password + OAuth)
+- [x] Create AuthCallback.tsx page for OAuth redirects
+- [x] Update App.tsx routing with /login and /auth/callback
+- [x] Remove getLoginUrl() references (verified via grep: 0 references)
+- [x] Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables
+- [x] Validate Supabase client initialization with tests
 
 ### Phase 4: Testing & Deployment (⏳ PENDING)
 - [ ] Test email/password login flow
