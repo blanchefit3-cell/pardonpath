@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Footer from "./components/Footer";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
@@ -28,9 +29,27 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/login"} component={Login} />
       <Route path={"/auth/callback"} component={AuthCallback} />
-      <Route path={"/dashboard"} component={Dashboard} />
-      <Route path={"/paralegal-queue"} component={ParalegalQueue} />
-      <Route path={"/admin"} component={AdminDashboard} />
+      <Route path={"/dashboard"}>
+        {() => (
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path={"/paralegal-queue"}>
+        {() => (
+          <ProtectedRoute requiredRole={["paralegal", "admin"]}>
+            <ParalegalQueue />
+          </ProtectedRoute>
+        )}
+      </Route>
+      <Route path={"/admin"}>
+        {() => (
+          <ProtectedRoute requiredRole="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        )}
+      </Route>
       <Route path={"/about"} component={About} />
       <Route path={"/privacy"} component={Privacy} />
       <Route path={"/terms"} component={Terms} />

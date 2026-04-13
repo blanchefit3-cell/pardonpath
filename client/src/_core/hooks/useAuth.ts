@@ -2,6 +2,8 @@ import { supabase, signOut } from "@/const";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
+export type UserRole = "user" | "admin" | "paralegal" | "partner";
+
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
   redirectPath?: string;
@@ -14,6 +16,7 @@ export function useAuth(options?: UseAuthOptions) {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [role, setRole] = useState<UserRole>("user");
 
   // Initialize session on mount
   useEffect(() => {
@@ -76,6 +79,7 @@ export function useAuth(options?: UseAuthOptions) {
     try {
       await signOut();
       setUser(null);
+      setRole("user");
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
       throw err;
@@ -89,17 +93,19 @@ export function useAuth(options?: UseAuthOptions) {
             id: user.id,
             email: user.email || "",
             name: user.user_metadata?.name || null,
+            role,
           }
         : null,
       loading,
       error,
       isAuthenticated: Boolean(user),
     };
-  }, [user, loading, error]);
+  }, [user, loading, error, role]);
 
   return {
     ...state,
     logout,
+    setRole,
     refresh: async () => {
       const { data } = await supabase.auth.getSession();
       setUser(data.session?.user ?? null);

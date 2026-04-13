@@ -21,10 +21,10 @@ export default function ParalegalQueue() {
   const [isRejecting, setIsRejecting] = useState(false);
 
   // Fetch applications pending paralegal review
-  const { data: applications, isLoading, refetch } = trpc.applications.list.useQuery(undefined);
+  const { data: applications, isLoading, refetch } = trpc.paralegal.getQueue.useQuery();
 
   // Approve application mutation
-  const approveMutation = trpc.applications.updateStatus.useMutation({
+  const approveMutation = trpc.paralegal.approveForSubmission.useMutation({
     onSuccess: () => {
       console.log("Application approved");
       setApprovalNotes("");
@@ -37,7 +37,7 @@ export default function ParalegalQueue() {
   });
 
   // Reject application mutation
-  const rejectMutation = trpc.applications.updateStatus.useMutation({
+  const rejectMutation = trpc.paralegal.rejectApplication.useMutation({
     onSuccess: () => {
       console.log("Application rejected");
       setRejectionNotes("");
@@ -70,7 +70,7 @@ export default function ParalegalQueue() {
     try {
       await approveMutation.mutateAsync({
         applicationId: selectedApp.id,
-        status: "submission",
+        notes: approvalNotes || undefined,
       });
     } finally {
       setIsApproving(false);
@@ -78,12 +78,12 @@ export default function ParalegalQueue() {
   };
 
   const handleReject = async () => {
-    if (!selectedApp) return;
+    if (!selectedApp || !rejectionNotes.trim()) return;
     setIsRejecting(true);
     try {
       await rejectMutation.mutateAsync({
         applicationId: selectedApp.id,
-        status: "rejected",
+        reason: rejectionNotes,
       });
     } finally {
       setIsRejecting(false);
@@ -177,18 +177,14 @@ export default function ParalegalQueue() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold">
-                        {app.applicant?.firstName} {app.applicant?.lastName}
+                        Application #{app.id}
                       </h3>
                       <Badge variant={app.status === "review" ? "default" : "secondary"}>
                         {app.status === "review" && <Clock className="w-3 h-3 mr-1" />}
                         {app.status}
                       </Badge>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                      <div>
-                        <p className="font-medium">Application ID</p>
-                        <p>#{app.id}</p>
-                      </div>
+                    <div className="grid grid-cols-3 gap-4 text-sm text-muted-foreground">
                       <div>
                         <p className="font-medium">Submitted</p>
                         <p>{new Date(app.createdAt).toLocaleDateString()}</p>

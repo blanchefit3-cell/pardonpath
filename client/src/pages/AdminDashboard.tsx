@@ -80,18 +80,7 @@ export default function AdminDashboard() {
     });
   }, [applications, searchTerm, filterStatus]);
 
-  if (!isAdmin) {
-    return (
-      <div className="container mx-auto py-8">
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>You do not have permission to access the admin dashboard.</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
+
 
   return (
     <div className="container mx-auto py-8">

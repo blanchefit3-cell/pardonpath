@@ -1,7 +1,7 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { protectedProcedure, publicProcedure, router, paralegalProcedure, adminProcedure } from "./_core/trpc";;
 import { z } from "zod";
 import {
   getDb,
@@ -35,6 +35,7 @@ import { reviewDocumentCompleteness } from "./document-review";
 import { formsRouter } from "./forms-router";
 import { statusRouter } from "./status-router";
 import { blogRouter, helpRouter } from "./blog-router";
+import { recordMilestone } from "./status-manager";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -43,6 +44,133 @@ export const appRouter = router({
   status: statusRouter,
   blog: blogRouter,
   help: helpRouter,
+
+  admin: router({
+    getAllApplications: adminProcedure.query(async () => {
+      const database = await getDb();
+      if (!database) return [];
+      return await database.select().from(applications);
+    }),
+
+    getAuditLogs: adminProcedure
+      .input(z.object({ limit: z.number().default(50), offset: z.number().default(0) }))
+      .query(async ({ input }) => {
+        const database = await getDb();
+        if (!database) return [];
+        return await database
+          .select()
+          .from(auditLogs)
+          .orderBy(auditLogs.timestamp)
+          .limit(input.limit)
+          .offset(input.offset);
+      }),
+  }),
+
+  paralegal: router({
+    getQueue: paralegalProcedure.query(async () => {
+      const database = await getDb();
+      if (!database) return [];
+      return await database
+        .select()
+        .from(applications)
+        .where(eq(applications.status, "review"));
+    }),
+
+    approveForSubmission: paralegalProcedure
+      .input(
+        z.object({
+          applicationId: z.number(),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const database = await getDb();
+        if (!database) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+        }
+
+        const application = await getApplicationById(input.applicationId);
+        if (!application) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Application not found" });
+        }
+
+        try {
+          await database
+            .update(applications)
+            .set({ status: "submission" })
+            .where(eq(applications.id, input.applicationId));
+
+          await database.insert(auditLogs).values({
+            applicationId: input.applicationId,
+            userId: ctx.user.id,
+            action: "paralegal_approved",
+            details: JSON.stringify({ notes: input.notes }),
+            ipAddress: ctx.req.ip || "unknown",
+            userAgent: ctx.req.headers["user-agent"] || "unknown",
+          });
+
+          await recordMilestone(
+            input.applicationId,
+            "form_submitted",
+            ctx.user.id,
+            input.notes
+          );
+
+          return { success: true };
+        } catch (error) {
+          console.error("[Paralegal.approveForSubmission] Error:", error);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to approve application" });
+        }
+      }),
+
+    rejectApplication: paralegalProcedure
+      .input(
+        z.object({
+          applicationId: z.number(),
+          reason: z.string().min(1, "Rejection reason is required"),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const database = await getDb();
+        if (!database) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+        }
+
+        const application = await getApplicationById(input.applicationId);
+        if (!application) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Application not found" });
+        }
+
+        try {
+          await database
+            .update(applications)
+            .set({ status: "rejected" })
+            .where(eq(applications.id, input.applicationId));
+
+          await database.insert(auditLogs).values({
+            applicationId: input.applicationId,
+            userId: ctx.user.id,
+            action: "paralegal_rejected",
+            details: JSON.stringify({ reason: input.reason }),
+            ipAddress: ctx.req.ip || "unknown",
+            userAgent: ctx.req.headers["user-agent"] || "unknown",
+          });
+
+          await recordMilestone(
+            input.applicationId,
+            "rejected",
+            ctx.user.id,
+            input.reason
+          );
+
+          return { success: true };
+        } catch (error) {
+          console.error("[Paralegal.rejectApplication] Error:", error);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to reject application" });
+        }
+      }),
+  }),
+
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {

@@ -276,3 +276,91 @@
 - [ ] Add related posts/articles sidebar
 - [ ] Implement full-text search for blog and help articles
 - [ ] Add article feedback system (helpful/unhelpful votes)
+
+
+## 🔴 CRITICAL FEATURES FOR MVP LAUNCH
+
+### Phase 7: Admin & Paralegal Access Control (CRITICAL)
+- [ ] Create ProtectedRoute wrapper component for role-based access
+- [ ] Add role checks to ParalegalQueue and AdminDashboard routes
+- [ ] Create admin login page (/admin/login) with role selection
+- [ ] Implement role indicator in navigation (show "Admin" or "Paralegal" badge)
+- [ ] Add logout functionality for admin sessions
+- [ ] Create admin account seeding script (seed-admin.mjs)
+- [ ] Audit logging for admin/paralegal login/logout
+- [ ] Test role-based access control (admin can access, users cannot)
+
+### Phase 8: Email Notifications (CRITICAL)
+- [ ] Wire recordMilestone mutation to send email via Resend
+- [ ] Create email template renderer (milestone type → email content)
+- [ ] Add email delivery tracking to audit logs
+- [ ] Implement unsubscribe link handling
+- [ ] Test email sending (send test to admin email)
+- [ ] Add email status to milestone records (sent, failed, bounced)
+- [ ] Handle failed email delivery gracefully
+- [ ] Create email template for each milestone type (10 templates)
+
+### Phase 9: Paralegal Queue Dashboard (✅ COMPLETE)
+- [x] Create tRPC mutation: paralegal.approveForSubmission
+- [x] Create tRPC mutation: paralegal.rejectApplication
+- [x] Wire ParalegalQueue to real tRPC data (trpc.paralegal.getQueue)
+- [x] Implement approve/reject buttons with confirmation dialogs
+- [x] Add notes field for paralegal comments
+- [x] Send email to applicant on approval/rejection (via recordMilestone)
+- [x] Add audit logging for all paralegal actions (paralegal_approved, paralegal_rejected)
+- [x] Test paralegal workflow (view queue, approve, email sent)
+
+### Phase 10: Admin Dashboard (✅ COMPLETE)
+- [x] Create tRPC query: admin.getAllApplications (all applications)
+- [x] Create tRPC query: admin.getAuditLogs (recent activity)
+- [x] Wire AdminDashboard to real tRPC data (trpc.admin.getAllApplications)
+- [x] Add analytics cards (total, approved, rejected, pending)
+- [x] Add status and tier charts
+- [x] Add audit log viewer
+- [x] Test admin dashboard (view all applications, see analytics)
+
+## 🜈 IMPORTANT FEATURES FOR MVP LAUNCH
+
+### Phase 11: How It Works & Eligibility Pages (IMPORTANT - IN PROGRESS)
+- [ ] Create /how-it-works page with 4-step process visualization
+- [ ] Create /eligibility page with eligibility criteria explanation
+- [ ] Add examples (Schedule 1, hybrid offenses, waiting periods)
+- [ ] Embed eligibility checker widget on /eligibility page
+- [ ] Add CTAs to start application
+- [ ] Test page rendering and links
+
+### Phase 12: Pricing Page & Tier Selection (IMPORTANT - IN PROGRESS)
+- [ ] Create dedicated /pricing page
+- [ ] Add tier selection during signup/application creation
+- [ ] Store selected tier in applications.tier field
+- [ ] Show tier-specific features in dashboard
+- [ ] Add "Upgrade" button for users on lower tiers (placeholder for Stripe)
+- [ ] Test tier selection and storage
+
+### Phase 13: Onboarding Wizard & Error Handling (IMPORTANT - IN PROGRESS)
+- [ ] Create onboarding modal/wizard component
+- [ ] Step 1: Welcome + explain process
+- [ ] Step 2: Eligibility checker
+- [ ] Step 3: Create application
+- [ ] Step 4: Upload documents
+- [ ] Add "Skip" option for experienced users
+- [ ] Show progress indicator
+- [ ] Add user-friendly error messages throughout app
+- [ ] Add loading skeletons for data fetching
+- [ ] Add success toast notifications for critical actions
+- [ ] Add error recovery suggestions
+- [ ] Add retry buttons for failed operations
+- [ ] Test onboarding flow and error handling
+
+### Phase 14: Testing & QA (IMPORTANT - PENDING)
+- [ ] Test all critical flows (signup → eligibility → documents → approval)
+- [ ] Test email notifications (verify delivery)
+- [ ] Test admin/paralegal access control (role-based routing)
+- [ ] Performance testing (load test with 10+ concurrent users)
+- [ ] Security audit (check RLS, encryption, API keys)
+- [ ] PIPEDA/compliance review
+- [ ] Mobile responsiveness testing
+- [ ] Cross-browser testing (Chrome, Firefox, Safari)
+- [ ] Accessibility testing (keyboard navigation, screen readers)
+- [ ] Create deployment checklist
+

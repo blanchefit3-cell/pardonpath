@@ -43,3 +43,22 @@ export const adminProcedure = t.procedure.use(
     });
   }),
 );
+
+export const paralegalProcedure = t.procedure.use(
+  t.middleware(async opts => {
+    const { ctx, next } = opts;
+
+    if (!ctx.user || (ctx.user.role !== 'paralegal' && ctx.user.role !== 'admin')) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Paralegal access required" });
+    }
+
+    return next({
+      ctx: {
+        ...ctx,
+        user: ctx.user,
+      },
+    });
+  }),
+);
+
+export const staffProcedure = paralegalProcedure;
