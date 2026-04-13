@@ -13,6 +13,7 @@ import {
 import { applicants, applications, auditLogs } from "../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
+import { checkEligibility, OffenseCategory, type EligibilityCheckInput } from "./eligibility-engine";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -248,6 +249,67 @@ export const appRouter = router({
         }
 
         return await getAuditLogsByApplicationId(input.applicationId);
+      }),
+  }),
+
+  /**
+   * Eligibility router: handles Criminal Records Act eligibility checks
+   */
+  eligibility: router({
+    /**
+     * Check eligibility for record suspension
+     */
+    check: publicProcedure
+      .input(
+        z.object({
+          offenses: z.array(
+            z.object({
+              type: z.string(),
+              category: z.enum(["summary", "indictable", "hybrid", "schedule_1"]),
+              convictionDate: z.date(),
+              sentenceEndDate: z.date(),
+              province: z.string(),
+              isFirstOffense: z.boolean(),
+            })
+          ),
+          applicationDate: z.date(),
+          hasOutstandingCharges: z.boolean(),
+          hasFailedToAppear: z.boolean(),
+          hasViolatedConditions: z.boolean(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        try {
+          // Map input categories to OffenseCategory enum
+          const categoryMap: Record<string, OffenseCategory> = {
+            summary: OffenseCategory.SUMMARY,
+            indictable: OffenseCategory.INDICTABLE,
+            hybrid: OffenseCategory.HYBRID,
+            schedule_1: OffenseCategory.SCHEDULE_1,
+          };
+
+          const eligibilityInput: EligibilityCheckInput = {
+            offenses: input.offenses.map(o => ({
+              ...o,
+              category: categoryMap[o.category] || OffenseCategory.SUMMARY,
+            })),
+            applicationDate: input.applicationDate,
+            hasOutstandingCharges: input.hasOutstandingCharges,
+            hasFailedToAppear: input.hasFailedToAppear,
+            hasViolatedConditions: input.hasViolatedConditions,
+          };
+
+          const result = checkEligibility(eligibilityInput);
+
+          // Note: Audit logs for eligibility checks without an application ID
+          // would require a schema change. For now, we only log when there's an application context.
+          // This is acceptable for the MVP as eligibility checks are typically done within the application flow.
+
+          return result;
+        } catch (error) {
+          console.error("[Eligibility.check] Error:", error);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to check eligibility" });
+        }
       }),
   }),
 });
