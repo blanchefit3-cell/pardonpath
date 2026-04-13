@@ -68,14 +68,14 @@
 - [x] PostgreSQL migration - Drizzle reconfigured for PostgreSQL; Supabase connected via SUPABASE_DB_URL
 - [x] Premium landing page - Asymmetric layout, Geist font, Deep Rose accent, Framer Motion animations
 - [x] Platform-agnostic notification abstraction - server/notify.ts wraps Manus notifyOwner
-- [ ] Applicant dashboard with real-time status tracker
-- [ ] Milestone history and progress indicators
+- [x] Applicant dashboard with real-time status tracker - Dashboard.tsx wired to trpc.status.getStatus, getMilestones, getProgress with loading/error/empty states
+- [x] Milestone history and progress indicators - MilestoneRow timeline driven by real backend data; pipeline logic unit-tested (6 tests)
 - [ ] Resend email integration for milestone alerts
 - [ ] Twilio SMS integration for milestone alerts
 - [ ] Email/SMS templates for each milestone
 - [ ] Internal paralegal review queue dashboard
 - [ ] Admin dashboard for application management
-- [ ] Audit log entries for status changes and notifications
+- [x] Audit log entries for status changes and notifications - status-router.ts records all status changes via logAuditEvent()
 
 ## Phase 6: Launch & Exit (Payments, Partner Portal, Paperclip Integration)
 - [ ] Stripe integration for three tiers (DIY $199, Done-With-You $599, Done-For-You $1,199)
@@ -98,7 +98,7 @@
 - [x] Immutable audit log (all actions timestamped and stored) - auditLogs table with append-only design
 - [x] PIPEDA compliance verification - PIPEDA.md framework complete; 10 principles implemented
 - [x] API-first architecture with documented endpoints - tRPC routers fully documented with Zod schemas
-- [x] Vitest test coverage for critical paths - 45 tests passing (eligibility, encryption, RCMP locator, auth)
+- [x] Vitest test coverage for critical paths - 69/71 tests passing (eligibility, encryption, RCMP locator, auth, Anthropic, Supabase, milestone pipeline)
 - [x] Error handling and validation across all features - Zod validation, TRPCError handling, try/catch blocks
 - [x] Security review (encryption, RLS, Zero Trust) - AES-256-GCM encryption, Supabase RLS, Cloudflare Zero Trust
 
