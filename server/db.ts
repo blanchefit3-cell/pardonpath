@@ -121,6 +121,26 @@ export async function getUserByOpenId(openId: string): Promise<typeof users.$inf
 }
 
 /**
+ * Get user by Supabase ID (UUID)
+ * For Supabase Auth integration: openId is the Supabase user ID
+ */
+export async function getUserBySupabaseId(supabaseId: string): Promise<typeof users.$inferSelect | undefined> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
+  }
+
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.openId, supabaseId))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : undefined;
+}
+
+/**
  * Application queries
  */
 export async function getApplicationById(applicationId: number) {
