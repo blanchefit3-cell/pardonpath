@@ -353,3 +353,119 @@ export const milestones = pgTable(
 
 export type Milestone = typeof milestones.$inferSelect;
 export type InsertMilestone = typeof milestones.$inferInsert;
+
+
+// ─── Blog System ─────────────────────────────────────────────────────────────
+
+export const blogCategoryEnum = pgEnum("blog_category", [
+  "guides",
+  "news",
+  "tips",
+  "legal",
+  "success_stories",
+  "updates",
+]);
+
+/**
+ * Blog posts table: stores published blog articles with SEO metadata.
+ */
+export const blogPosts = pgTable(
+  "blogPosts",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    title: varchar("title", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: 255 }).notNull().unique(),
+    content: text("content").notNull(),
+    excerpt: text("excerpt"),
+    category: blogCategoryEnum("category").notNull(),
+    author: varchar("author", { length: 255 }).notNull(),
+    authorId: uuid("authorId"),
+    featuredImage: text("featuredImage"),
+    seoTitle: varchar("seoTitle", { length: 255 }),
+    seoDescription: text("seoDescription"),
+    seoKeywords: text("seoKeywords"),
+    published: boolean("published").default(false).notNull(),
+    publishedAt: timestamp("publishedAt"),
+    viewCount: integer("viewCount").default(0).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  (table) => ({
+    slugIdx: index("blogPosts_slug_idx").on(table.slug),
+    categoryIdx: index("blogPosts_category_idx").on(table.category),
+    publishedIdx: index("blogPosts_published_idx").on(table.published),
+    authorIdIdx: index("blogPosts_authorId_idx").on(table.authorId),
+  })
+);
+
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = typeof blogPosts.$inferInsert;
+
+// ─── Help Center / Knowledge Base ────────────────────────────────────────────
+
+export const helpArticleCategoryEnum = pgEnum("help_article_category", [
+  "getting_started",
+  "eligibility",
+  "documents",
+  "forms",
+  "status",
+  "payment",
+  "legal",
+  "faq",
+  "troubleshooting",
+]);
+
+/**
+ * Help articles table: stores knowledge base articles for the help center.
+ */
+export const helpArticles = pgTable(
+  "helpArticles",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    title: varchar("title", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: 255 }).notNull().unique(),
+    content: text("content").notNull(),
+    category: helpArticleCategoryEnum("category").notNull(),
+    author: varchar("author", { length: 255 }).notNull(),
+    authorId: uuid("authorId"),
+    relatedArticles: json("relatedArticles").$type<number[]>(),
+    helpfulCount: integer("helpfulCount").default(0).notNull(),
+    unhelpfulCount: integer("unhelpfulCount").default(0).notNull(),
+    viewCount: integer("viewCount").default(0).notNull(),
+    published: boolean("published").default(false).notNull(),
+    publishedAt: timestamp("publishedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  (table) => ({
+    slugIdx: index("helpArticles_slug_idx").on(table.slug),
+    categoryIdx: index("helpArticles_category_idx").on(table.category),
+    publishedIdx: index("helpArticles_published_idx").on(table.published),
+    authorIdIdx: index("helpArticles_authorId_idx").on(table.authorId),
+  })
+);
+
+export type HelpArticle = typeof helpArticles.$inferSelect;
+export type InsertHelpArticle = typeof helpArticles.$inferInsert;
+
+/**
+ * Article feedback table: tracks helpful/unhelpful votes on help articles.
+ */
+export const articleFeedback = pgTable(
+  "articleFeedback",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    articleId: integer("articleId").notNull(),
+    userId: uuid("userId"),
+    helpful: boolean("helpful").notNull(),
+    comment: text("comment"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => ({
+    articleIdIdx: index("articleFeedback_articleId_idx").on(table.articleId),
+    userIdIdx: index("articleFeedback_userId_idx").on(table.userId),
+  })
+);
+
+export type ArticleFeedback = typeof articleFeedback.$inferSelect;
+export type InsertArticleFeedback = typeof articleFeedback.$inferInsert;

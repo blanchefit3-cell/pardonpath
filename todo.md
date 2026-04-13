@@ -195,3 +195,81 @@
 - [ ] Monitor auth logs for errors
 - [ ] Remove Manus OAuth configuration
 
+
+
+## Phase 7: Footer Pages & Content (NEW)
+
+- [x] Create About page (/about) with company mission, team, values
+- [x] Create Privacy Policy page (/privacy) with PIPEDA compliance details
+- [x] Create Terms of Service page (/terms) with legal disclaimers
+- [x] Create Contact page (/contact) with contact form and support info
+- [x] Create FAQ page (/faq) with common questions
+- [x] Create Footer component with links to all pages
+- [x] Add footer navigation component to all pages (via App.tsx)
+- [ ] Create sitemap.xml for SEO
+
+## Phase 8: Blog System (NEW)
+
+- [ ] Add blog_posts table to database schema
+- [ ] Add blog_categories table to database schema
+- [ ] Create blog admin interface (create/edit/delete posts)
+- [ ] Create blog listing page (/blog) with pagination
+- [ ] Create blog post detail page (/blog/[slug])
+- [ ] Implement blog search functionality
+- [ ] Add SEO metadata to blog posts (title, description, keywords)
+- [ ] Generate blog post slugs automatically
+- [ ] Add featured image support
+- [ ] Add author information to posts
+- [ ] Add related posts suggestions
+- [ ] Implement blog archive by date/category
+
+## Phase 9: Help Center & Knowledge Base (NEW)
+
+- [ ] Add articles table to database schema
+- [ ] Add article_categories table to database schema
+- [ ] Create help center listing page (/help) with categories
+- [ ] Create article detail page (/help/[slug])
+- [ ] Implement full-text search for articles
+- [ ] Add breadcrumb navigation
+- [ ] Add "Was this helpful?" feedback
+- [ ] Create article admin interface
+- [ ] Add video support for articles
+- [ ] Implement article versioning
+
+## Phase 10: SEO/AEO/GEO Optimization (NEW)
+
+- [ ] Add meta tags to all pages (title, description, keywords, og:*)
+- [ ] Implement JSON-LD structured data (Organization, Article, BreadcrumbList)
+- [ ] Create robots.txt
+- [ ] Add canonical URLs
+- [ ] Implement hreflang tags for language variants (if needed)
+- [ ] Add schema.org markup for local business (GEO)
+- [ ] Create dynamic sitemap.xml with blog posts and help articles
+- [ ] Add Open Graph images for social sharing
+- [ ] Implement Twitter Card metadata
+- [ ] Add Google Analytics 4 tracking
+- [ ] Add Hotjar for user behavior tracking
+- [ ] Optimize images for SEO (alt text, compression)
+- [ ] Add internal linking strategy
+- [ ] Create robots.txt with crawl directives
+- [ ] Implement AEO (Answer Engine Optimization) for AI search
+
+
+## Phase 8: Blog & Help Center (NEW)
+
+- [x] Add blog_posts, helpArticles, articleFeedback tables to database schema
+- [x] Generate and review migration SQL (0001_dusty_blue_blade.sql)
+- [x] Create blog-db.ts with query helpers (getPublishedBlogPosts, getBlogPostBySlug, etc.)
+- [x] Create Blog.tsx page with category filtering and post listing
+- [x] Create HelpCenter.tsx page with article categories and search
+- [x] Add /blog and /help routes to App.tsx
+- [x] Update Footer.tsx to link to Blog and Help pages
+- [ ] Apply database migration to Supabase (run migration SQL in Supabase SQL Editor)
+- [ ] Create individual blog post pages (/blog/:slug)
+- [ ] Create individual help article pages (/help/:slug)
+- [ ] Add blog admin interface for creating/editing posts
+- [ ] Add help article admin interface for creating/editing articles
+- [ ] Implement blog post SEO metadata (meta tags, structured data)
+- [ ] Add related posts/articles sidebar
+- [ ] Implement full-text search for blog and help articles
+- [ ] Add article feedback system (helpful/unhelpful votes)
