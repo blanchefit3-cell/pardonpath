@@ -321,6 +321,9 @@
 
 ## 🜈 IMPORTANT FEATURES FOR MVP LAUNCH
 
+### Bug Fixes
+- [x] Remove duplicate footer menus on home page (removed local Footer from Home.tsx, kept global Footer from App.tsx)
+
 ### Phase 11: How It Works & Eligibility Pages (✅ COMPLETE)
 - [x] Create /how-it-works page with 4-step process visualization
 - [x] Create /eligibility page with eligibility criteria explanation

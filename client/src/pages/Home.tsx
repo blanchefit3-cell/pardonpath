@@ -554,65 +554,7 @@ function CTA() {
   );
 }
 
-// ─── Footer ────────────────────────────────────────────────────────────────────
-function Footer() {
-  return (
-    <footer className="border-t border-zinc-100 py-12">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-          <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-6 h-6 rounded-md bg-[oklch(0.55_0.18_15)] flex items-center justify-center">
-                <Shield className="w-3.5 h-3.5 text-white" strokeWidth={2} />
-              </div>
-              <span className="font-semibold text-zinc-900 text-sm tracking-tight">PardonPath</span>
-            </div>
-            <p className="text-xs text-zinc-400 leading-relaxed max-w-[24ch]">
-              Canada's trusted record suspension platform.
-            </p>
-            <div className="flex items-center gap-1.5 mt-3 text-xs text-zinc-400">
-              <MapPin className="w-3 h-3" strokeWidth={2} />
-              Canadian-owned. Canadian servers.
-            </div>
-          </div>
 
-          {[
-            {
-              heading: "Product",
-              links: ["Eligibility checker", "Document review", "Status tracking", "Pricing"],
-            },
-            {
-              heading: "Legal",
-              links: ["Privacy policy", "Terms of service", "PIPEDA compliance", "Cookie policy"],
-            },
-            {
-              heading: "Support",
-              links: ["Help centre", "Contact us", "Paralegal team", "Careers"],
-            },
-          ].map((col) => (
-            <div key={col.heading}>
-              <p className="text-xs font-semibold text-zinc-900 uppercase tracking-widest mb-4">{col.heading}</p>
-              <ul className="space-y-2.5">
-                {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors">
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="border-t border-zinc-100 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-400">
-          <p>© 2025 PardonPath Inc. All rights reserved.</p>
-          <p>Not a law firm. Paralegal services provided by licensed Ontario paralegals.</p>
-        </div>
-      </div>
-    </footer>
-  );
-}
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function Home() {
@@ -624,7 +566,6 @@ export default function Home() {
       <Pricing />
       <FAQ />
       <CTA />
-      <Footer />
     </div>
   );
 }
