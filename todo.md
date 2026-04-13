@@ -154,3 +154,40 @@
 - [ ] Replace BUILT_IN_FORGE_API_KEY/URL references with generic API_KEY/URL
 - [ ] Add .env.example with all required environment variables documented
 - [ ] Update README.md with self-hosting instructions
+
+
+## Supabase Auth Migration (Removing Manus Dependency)
+
+### Phase 1: Backend Infrastructure (✅ COMPLETE)
+- [x] Create Supabase Auth helper module (server/_core/supabase-auth.ts)
+- [x] Update context.ts to verify tokens with Supabase Admin API
+- [x] Add getUserBySupabaseId() function to db.ts
+- [x] Create Supabase auth integration tests
+- [x] Request and validate SUPABASE_SERVICE_ROLE_KEY secret
+- [x] Document migration path (docs/AUTH_COMPARISON.md, docs/SUPABASE_AUTH_MIGRATION.md)
+- [x] Add @supabase/supabase-js dependency
+
+### Phase 2: Database Schema (⏳ PENDING DEPLOYMENT)
+- [ ] Apply migration: ALTER users.id from integer to UUID
+- [ ] Make users.openId nullable (for backward compatibility)
+- [ ] Update foreign keys if needed
+- [ ] Test migration on staging database
+
+### Phase 3: Frontend Implementation (⏳ PENDING)
+- [ ] Create Supabase client in client/src/const.ts
+- [ ] Replace useAuth hook with Supabase session listener
+- [ ] Update tRPC client to send Authorization header
+- [ ] Create Login.tsx page (email/password + OAuth)
+- [ ] Create Signup.tsx page
+- [ ] Update App.tsx routing
+- [ ] Remove getLoginUrl() references
+
+### Phase 4: Testing & Deployment (⏳ PENDING)
+- [ ] Test email/password login flow
+- [ ] Test OAuth (Google, GitHub) login
+- [ ] Test protected routes
+- [ ] Test user data sync to database
+- [ ] Deploy and verify in production
+- [ ] Monitor auth logs for errors
+- [ ] Remove Manus OAuth configuration
+
