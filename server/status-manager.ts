@@ -1,7 +1,8 @@
 import { getDb, logAuditEvent } from "./db";
-import { applications, milestones } from "../drizzle/schema";
+import { applications, milestones, applicants } from "../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { sendMilestoneEmail } from "./_core/email";
 
 export type ApplicationStatus = "intake" | "documents" | "review" | "submission" | "decision" | "completed" | "rejected";
 export type MilestoneType = 
@@ -223,6 +224,37 @@ export async function recordMilestone(
     ipAddress: "system",
     userAgent: "status-manager",
   });
+
+  // Send email notification to applicant
+  try {
+    const app = await db
+      .select()
+      .from(applications)
+      .where(eq(applications.id, applicationId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (app) {
+      const applicant = await db
+        .select()
+        .from(applicants)
+        .where(eq(applicants.id, app.applicantId))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (applicant && applicant.email) {
+        await sendMilestoneEmail({
+          applicantName: applicant.firstName || "Applicant",
+          applicantEmail: applicant.email,
+          applicationId: applicationId.toString(),
+          milestoneType: milestoneType as any,
+        });
+      }
+    }
+  } catch (error) {
+    // Log email error but don't fail the milestone recording
+    console.error(`Failed to send milestone email for ${milestoneType}:`, error);
+  }
 
   return {
     success: true,

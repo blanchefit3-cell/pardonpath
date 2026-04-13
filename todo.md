@@ -70,10 +70,10 @@
 - [x] Platform-agnostic notification abstraction - server/notify.ts wraps Manus notifyOwner
 - [x] Applicant dashboard with real-time status tracker - Dashboard.tsx wired to trpc.status.getStatus, getMilestones, getProgress with loading/error/empty states
 - [x] Milestone history and progress indicators - MilestoneRow timeline driven by real backend data; pipeline logic unit-tested (6 tests)
-- [ ] Resend email integration for milestone alerts
+- [x] Resend email integration for milestone alerts - 10 templates, automatic sending on milestone updates
 - [ ] Twilio SMS integration for milestone alerts
 - [ ] Email/SMS templates for each milestone
-- [ ] Internal paralegal review queue dashboard
+- [x] Internal paralegal review queue dashboard - ParalegalQueue.tsx with approve/reject workflow
 - [ ] Admin dashboard for application management
 - [x] Audit log entries for status changes and notifications - status-router.ts records all status changes via logAuditEvent()
 
