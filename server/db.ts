@@ -318,7 +318,7 @@ export async function updatePaymentStatus(
 /**
  * Partner queries
  */
-export async function getPartnerByUserId(userId: number) {
+export async function getPartnerByUserId(userId: string) {
   const db = await getDb();
   if (!db) return undefined;
 

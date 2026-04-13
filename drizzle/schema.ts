@@ -9,7 +9,9 @@ import {
   decimal,
   json,
   index,
+  uuid,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 // ─── Enum Definitions ────────────────────────────────────────────────────────
 // All enums must be defined outside tables so .default() and .notNull() work.
@@ -95,7 +97,7 @@ export const milestoneStatusEnum = pgEnum("milestone_status_enum", [
  * Extended with role-based access control for applicants, paralegals, and B2B partners.
  */
 export const users = pgTable("users", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }).notNull().unique(),
@@ -117,7 +119,7 @@ export const applicants = pgTable(
   "applicants",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    userId: integer("userId").notNull(),
+    userId: uuid("userId").notNull(),
     firstName: varchar("firstName", { length: 100 }).notNull(),
     lastName: varchar("lastName", { length: 100 }).notNull(),
     email: varchar("email", { length: 320 }).notNull(),
@@ -160,7 +162,7 @@ export const applications = pgTable(
     paymentStatus: paymentStatusEnum("paymentStatus").default("pending"),
     submittedToPBC: boolean("submittedToPBC").default(false),
     pbcDecision: pbcDecisionEnum("pbcDecision"),
-    paralegalAssignedId: integer("paralegalAssignedId"),
+    paralegalAssignedId: uuid("paralegalAssignedId"),
     paralegalNotes: text("paralegalNotes"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -211,7 +213,7 @@ export const auditLogs = pgTable(
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     applicationId: integer("applicationId").notNull(),
-    userId: integer("userId"),
+    userId: uuid("userId"),
     action: varchar("action", { length: 100 }).notNull(),
     details: json("details"),
     ipAddress: varchar("ipAddress", { length: 45 }),
@@ -288,7 +290,7 @@ export const partners = pgTable(
   "partners",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    userId: integer("userId").notNull().unique(),
+    userId: uuid("userId").notNull().unique(),
     companyName: varchar("companyName", { length: 255 }).notNull(),
     businessNumber: varchar("businessNumber", { length: 20 }),
     apiKey: varchar("apiKey", { length: 255 }).notNull().unique(),
@@ -339,7 +341,7 @@ export const milestones = pgTable(
     status: milestoneStatusEnum("status").default("pending").notNull(),
     completedAt: timestamp("completedAt"),
     notes: text("notes"),
-    createdBy: integer("createdBy"),
+    createdBy: uuid("createdBy"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   },

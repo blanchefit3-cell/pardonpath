@@ -85,8 +85,8 @@ export async function getMilestoneHistory(applicationId: number) {
  */
 export async function updateApplicationStatus(
   applicationId: number,
-  newStatus: ApplicationStatus,
-  userId: number,
+  status: ApplicationStatus,
+  userId: string,
   notes?: string
 ) {
   const db = await getDb();
@@ -120,17 +120,17 @@ export async function updateApplicationStatus(
     rejected: [],
   };
 
-  if (!validTransitions[app.status as ApplicationStatus]?.includes(newStatus)) {
+  if (!validTransitions[app.status as ApplicationStatus]?.includes(status)) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: `Cannot transition from ${app.status} to ${newStatus}`,
+      message: `Cannot transition from ${app.status} to ${status}`,
     });
   }
 
   // Update application status
   await db
     .update(applications)
-    .set({ status: newStatus, updatedAt: new Date() })
+    .set({ status, updatedAt: new Date() })
     .where(eq(applications.id, applicationId));
 
   // Log the status change
@@ -140,7 +140,7 @@ export async function updateApplicationStatus(
     action: "status_updated",
     details: {
       oldStatus: app.status,
-      newStatus,
+      newStatus: status,
       notes,
     },
     ipAddress: "system",
@@ -151,7 +151,7 @@ export async function updateApplicationStatus(
     success: true,
     applicationId,
     oldStatus: app.status,
-    newStatus,
+    newStatus: status,
   };
 }
 
@@ -161,7 +161,7 @@ export async function updateApplicationStatus(
 export async function recordMilestone(
   applicationId: number,
   milestoneType: MilestoneType,
-  userId: number,
+  userId: string,
   notes?: string
 ) {
   const db = await getDb();
