@@ -146,13 +146,15 @@
 
 ## Platform-Agnostic Refactoring
 - [x] Add SUPABASE_DB_URL secret and update db.ts to use it - db.ts now prefers SUPABASE_DB_URL over DATABASE_URL
+- [x] Document environment variables - docs/ENVIRONMENT_VARIABLES.md with all required vars
+- [x] Create deployment guide - docs/DEPLOYMENT_GUIDE.md with pre-deployment, testing, and rollback checklists
+- [x] Create accurate migration SQL - docs/MIGRATION_SQL.sql with all FK relationships and verified steps
 - [ ] Audit server/_core/env.ts - replace Manus-specific env vars with generic ones
 - [ ] Audit server/_core/llm.ts - make LLM provider configurable (not Manus-only)
 - [ ] Audit server/_core/notification.ts - replace Manus notifyOwner with generic email
 - [ ] Audit server/_core/oauth.ts - document Manus OAuth dependency, add abstraction layer
 - [ ] Audit client/src/const.ts - replace Manus OAuth portal URL with configurable env
 - [ ] Replace BUILT_IN_FORGE_API_KEY/URL references with generic API_KEY/URL
-- [ ] Add .env.example with all required environment variables documented
 - [ ] Update README.md with self-hosting instructions
 
 
