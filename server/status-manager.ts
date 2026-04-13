@@ -1,6 +1,6 @@
 import { getDb, logAuditEvent } from "./db";
 import { applications, milestones } from "../drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export type ApplicationStatus = "intake" | "documents" | "review" | "submission" | "decision" | "completed" | "rejected";
@@ -25,9 +25,12 @@ export async function getApplicationStatus(applicationId: number) {
     throw new Error("Database not available");
   }
 
-  const app = await db.query.applications.findFirst({
-    where: eq(applications.id, applicationId),
-  });
+  const app = await db
+    .select()
+    .from(applications)
+    .where(eq(applications.id, applicationId))
+    .limit(1)
+    .then((rows) => rows[0]);
 
   if (!app) {
     throw new TRPCError({
@@ -59,10 +62,11 @@ export async function getMilestoneHistory(applicationId: number) {
     throw new Error("Database not available");
   }
 
-  const milestoneRecords = await db.query.milestones.findMany({
-    where: eq(milestones.applicationId, applicationId),
-    orderBy: (m) => m.createdAt,
-  });
+  const milestoneRecords = await db
+    .select()
+    .from(milestones)
+    .where(eq(milestones.applicationId, applicationId))
+    .orderBy(desc(milestones.createdAt));
 
   return milestoneRecords.map((m) => ({
     id: m.id,
@@ -90,9 +94,12 @@ export async function updateApplicationStatus(
   }
 
   // Get current application
-  const app = await db.query.applications.findFirst({
-    where: eq(applications.id, applicationId),
-  });
+  const app = await db
+    .select()
+    .from(applications)
+    .where(eq(applications.id, applicationId))
+    .limit(1)
+    .then((rows) => rows[0]);
 
   if (!app) {
     throw new TRPCError({
@@ -162,12 +169,17 @@ export async function recordMilestone(
   }
 
   // Check if milestone already exists and is completed
-  const existing = await db.query.milestones.findFirst({
-    where: and(
-      eq(milestones.applicationId, applicationId),
-      eq(milestones.milestoneType, milestoneType)
-    ),
-  });
+  const existing = await db
+    .select()
+    .from(milestones)
+    .where(
+      and(
+        eq(milestones.applicationId, applicationId),
+        eq(milestones.milestoneType, milestoneType)
+      )
+    )
+    .limit(1)
+    .then((rows) => rows[0]);
 
   if (existing && existing.status === "completed") {
     throw new TRPCError({
@@ -228,9 +240,12 @@ export async function getApplicationProgress(applicationId: number) {
     throw new Error("Database not available");
   }
 
-  const app = await db.query.applications.findFirst({
-    where: eq(applications.id, applicationId),
-  });
+  const app = await db
+    .select()
+    .from(applications)
+    .where(eq(applications.id, applicationId))
+    .limit(1)
+    .then((rows) => rows[0]);
 
   if (!app) {
     throw new TRPCError({
@@ -239,10 +254,11 @@ export async function getApplicationProgress(applicationId: number) {
     });
   }
 
-  const milestoneRecords = await db.query.milestones.findMany({
-    where: eq(milestones.applicationId, applicationId),
-    orderBy: (m: any) => m.createdAt,
-  });
+  const milestoneRecords = await db
+    .select()
+    .from(milestones)
+    .where(eq(milestones.applicationId, applicationId))
+    .orderBy(milestones.createdAt);
 
   const completedMilestones = milestoneRecords.filter((m) => m.status === "completed").length;
   const totalMilestones = milestoneRecords.length;

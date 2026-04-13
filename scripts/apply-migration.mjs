@@ -1,58 +1,58 @@
-import mysql from "mysql2/promise.js";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+#!/usr/bin/env node
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import postgres from 'postgres';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
+
+const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xa3RudnFvc2hobnNqZ2lsdHNvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjAyNTA4NCwiZXhwIjoyMDkxNjAxMDg0fQ.7LCpts_wTJrzVatfSMfOJ8E5VuhDF3dqxYhQWI5ES6k';
+
+// Construct the connection string for PostgreSQL
+const connectionString = `postgresql://postgres.mqktnvqoshhnsjgiltso:${serviceRoleKey}@db.mqktnvqoshhnsjgiltso.supabase.co:5432/postgres`;
 
 async function applyMigration() {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    console.error("❌ DATABASE_URL environment variable not set");
-    process.exit(1);
-  }
-
-  console.log("🔄 Connecting to database...");
-
   try {
-    const connection = await mysql.createConnection(databaseUrl);
-    console.log("✅ Connected to database");
+    console.log('🔗 Connecting to Supabase PostgreSQL...');
+    const sql = postgres(connectionString, {
+      ssl: 'require',
+      max: 1,
+    });
 
     // Read the migration SQL file
-    const migrationPath = path.join(__dirname, "../drizzle/0001_graceful_wild_child.sql");
-    const migrationSql = fs.readFileSync(migrationPath, "utf-8");
+    const migrationPath = resolve(process.cwd(), 'drizzle/0000_yielding_satana.sql');
+    const migrationSQL = readFileSync(migrationPath, 'utf-8');
 
-    // Split by statement breakpoints and execute each statement
-    const statements = migrationSql
-      .split("--> statement-breakpoint")
-      .map((stmt) => stmt.trim())
-      .filter((stmt) => stmt.length > 0);
+    console.log('📝 Applying migration...');
+    
+    // Split by statement-breakpoint and execute each statement
+    const statements = migrationSQL
+      .split('--> statement-breakpoint')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
 
-    console.log(`📋 Found ${statements.length} SQL statements to execute`);
+    console.log(`Found ${statements.length} statements to execute`);
 
     for (let i = 0; i < statements.length; i++) {
-      const statement = statements[i];
-      try {
-        console.log(`⏳ Executing statement ${i + 1}/${statements.length}...`);
-        await connection.execute(statement);
-        console.log(`✅ Statement ${i + 1} executed successfully`);
-      } catch (error) {
-        // Ignore "table already exists" errors
-        if (error.code === "ER_TABLE_EXISTS_ERROR" || error.message.includes("already exists")) {
-          console.log(`⚠️  Statement ${i + 1} skipped (table already exists)`);
-        } else {
-          console.error(`❌ Statement ${i + 1} failed:`, error.message);
-          throw error;
+      const stmt = statements[i];
+      if (stmt) {
+        try {
+          console.log(`  [${i + 1}/${statements.length}] Executing...`);
+          await sql.unsafe(stmt);
+        } catch (error) {
+          // Ignore "already exists" errors
+          if (error.message.includes('already exists') || error.message.includes('duplicate key')) {
+            console.log(`  [${i + 1}/${statements.length}] ⚠️  Already exists, skipping`);
+          } else {
+            throw error;
+          }
         }
       }
     }
 
-    console.log("✅ Migration completed successfully!");
-    await connection.end();
+    console.log('✅ Migration applied successfully!');
+    await sql.end();
     process.exit(0);
   } catch (error) {
-    console.error("❌ Migration failed:", error.message);
+    console.error('❌ Migration failed:', error.message);
     process.exit(1);
   }
 }

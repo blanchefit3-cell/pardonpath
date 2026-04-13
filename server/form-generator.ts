@@ -1,6 +1,6 @@
 import { PDFDocument, PDFForm } from 'pdf-lib';
 import { storagePut, storageGet } from './storage';
-import { notifyOwner } from './_core/notification';
+import { notify } from './notify';
 
 /**
  * PBC Form Field Mapping
@@ -73,7 +73,7 @@ export async function generatePBCForm(
     return { url, fileKey };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    await notifyOwner({
+    await notify({
       title: 'PBC Form Generation Failed',
       content: `Error generating PBC form for applicant: ${errorMessage}`,
     });

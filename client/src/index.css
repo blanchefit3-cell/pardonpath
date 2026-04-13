@@ -43,18 +43,19 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
+  /* PardonPath: Deep Rose accent on Zinc/Slate neutral base */
+  --primary: oklch(0.55 0.18 15);       /* Deep Rose */
+  --primary-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.55 0.18 15);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --chart-1: oklch(0.75 0.12 15);
+  --chart-2: oklch(0.65 0.15 15);
+  --chart-3: oklch(0.55 0.18 15);
+  --chart-4: oklch(0.45 0.16 15);
+  --chart-5: oklch(0.35 0.12 15);
+  --radius: 0.5rem;
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.13 0.008 285);  /* Zinc-950 off-black */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.235 0.015 65);
   --popover: oklch(1 0 0);
@@ -119,6 +120,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Geist', 'Geist Fallback', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),

@@ -1,4 +1,5 @@
 import { defineConfig } from "drizzle-kit";
+// Note: Supabase uses PostgreSQL, not MySQL
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -8,7 +9,7 @@ if (!connectionString) {
 export default defineConfig({
   schema: "./drizzle/schema.ts",
   out: "./drizzle",
-  dialect: "mysql",
+  dialect: "postgresql",
   dbCredentials: {
     url: connectionString,
   },

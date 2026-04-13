@@ -1,5 +1,6 @@
 import { eq, desc } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import {
   InsertUser,
   users,
@@ -15,21 +16,24 @@ import {
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
-
-// Type for drizzle instance with schema
-type DrizzleDB = ReturnType<typeof drizzle<typeof import('../drizzle/schema')>>;
+let _client: postgres.Sql | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
-export async function getDb(): Promise<DrizzleDB | null> {
-  if (!_db && process.env.DATABASE_URL) {
+// Prefers SUPABASE_DB_URL (PostgreSQL) over DATABASE_URL (platform-managed MySQL).
+export async function getDb() {
+  const dbUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
+  if (!_db && dbUrl) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _client = postgres(dbUrl, { ssl: dbUrl.includes('supabase') ? 'require' : undefined });
+      _db = drizzle(_client);
+      console.log(`[Database] Connected via ${process.env.SUPABASE_DB_URL ? 'SUPABASE_DB_URL' : 'DATABASE_URL'}`);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
+      _client = null;
     }
   }
-  return _db as DrizzleDB | null;
+  return _db;
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
@@ -86,16 +90,21 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
+    // PostgreSQL upsert using ON CONFLICT
+    await db
+      .insert(users)
+      .values(values)
+      .onConflictDoUpdate({
+        target: users.openId,
+        set: updateSet,
+      });
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
   }
 }
 
-export async function getUserByOpenId(openId: string) {
+export async function getUserByOpenId(openId: string): Promise<typeof users.$inferSelect | undefined> {
   const db = await getDb();
   if (!db) {
     console.warn("[Database] Cannot get user: database not available");

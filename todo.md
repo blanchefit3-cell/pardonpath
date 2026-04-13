@@ -157,3 +157,14 @@
 - Implement production-grade print-ready layout with proper pagination
 - Add fail-fast validation for template field mapping
 - Add integration tests for forms.generate mutation
+
+## Platform-Agnostic Refactoring
+- [ ] Add SUPABASE_DB_URL secret and update db.ts to use it
+- [ ] Audit server/_core/env.ts - replace Manus-specific env vars with generic ones
+- [ ] Audit server/_core/llm.ts - make LLM provider configurable (not Manus-only)
+- [ ] Audit server/_core/notification.ts - replace Manus notifyOwner with generic email
+- [ ] Audit server/_core/oauth.ts - document Manus OAuth dependency, add abstraction layer
+- [ ] Audit client/src/const.ts - replace Manus OAuth portal URL with configurable env
+- [ ] Replace BUILT_IN_FORGE_API_KEY/URL references with generic API_KEY/URL
+- [ ] Add .env.example with all required environment variables documented
+- [ ] Update README.md with self-hosting instructions
