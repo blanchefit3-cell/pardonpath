@@ -60,7 +60,13 @@ describe("Anthropic API Integration", () => {
     expect(response.choices[0]?.message?.content).toBeDefined();
     const content = response.choices[0]?.message?.content;
     if (typeof content === "string") {
-      const parsed = JSON.parse(content);
+      // Claude may wrap JSON in markdown code blocks, so extract it
+      let jsonString = content;
+      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch && jsonMatch[1]) {
+        jsonString = jsonMatch[1].trim();
+      }
+      const parsed = JSON.parse(jsonString);
       expect(parsed).toHaveProperty("name");
       expect(parsed).toHaveProperty("status");
     }
