@@ -274,3 +274,41 @@ export const partnerClients = mysqlTable(
 
 export type PartnerClient = typeof partnerClients.$inferSelect;
 export type InsertPartnerClient = typeof partnerClients.$inferInsert;
+
+
+/**
+ * Milestones table: tracks progress through application lifecycle stages.
+ * Records when applicant completes each stage (intake, documents, review, submission, decision).
+ */
+export const milestones = mysqlTable(
+  "milestones",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    applicationId: int("applicationId").notNull(),
+    milestoneType: mysqlEnum("milestoneType", [
+      "intake_started",
+      "intake_completed",
+      "documents_submitted",
+      "documents_approved",
+      "form_generated",
+      "form_submitted",
+      "under_review",
+      "decision_received",
+      "approved",
+      "rejected",
+    ]).notNull(),
+    status: mysqlEnum("status", ["pending", "completed", "skipped"]).default("pending").notNull(),
+    completedAt: timestamp("completedAt"),
+    notes: text("notes"), // Optional notes (e.g., "Applicant submitted 3 documents")
+    createdBy: int("createdBy"), // User ID who created/updated this milestone (system or admin)
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => ({
+    applicationIdIdx: index("milestones_applicationId_idx").on(table.applicationId),
+    milestoneTypeIdx: index("milestones_milestoneType_idx").on(table.milestoneType),
+  })
+);
+
+export type Milestone = typeof milestones.$inferSelect;
+export type InsertMilestone = typeof milestones.$inferInsert;

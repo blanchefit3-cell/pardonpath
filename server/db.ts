@@ -10,13 +10,17 @@ import {
   notifications,
   payments,
   partners,
+  milestones,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
+// Type for drizzle instance with schema
+type DrizzleDB = ReturnType<typeof drizzle<typeof import('../drizzle/schema')>>;
+
 // Lazily create the drizzle instance so local tooling can run without a DB.
-export async function getDb() {
+export async function getDb(): Promise<DrizzleDB | null> {
   if (!_db && process.env.DATABASE_URL) {
     try {
       _db = drizzle(process.env.DATABASE_URL);
@@ -25,7 +29,7 @@ export async function getDb() {
       _db = null;
     }
   }
-  return _db;
+  return _db as DrizzleDB | null;
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
